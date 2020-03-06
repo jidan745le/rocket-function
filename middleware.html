@@ -1,0 +1,51 @@
+<script>
+    const app = {
+        fns: [],
+        callback(ctx) {
+            console.log(ctx)
+        },
+
+        use(fn) {
+            this.fns.push(fn);
+        },
+
+        nextFn(ctx) {
+            if (this.fns.length === 0) {
+                return () => this.callback(ctx);
+            } else {
+                let fn = this.fns.shift();
+                return () => fn(ctx, this.nextFn(ctx));
+            }
+        },
+        
+        //用递归方法实现
+        goRecursive(ctx) {
+            this.nextFn(ctx)();
+        },
+
+        //用reduce方法
+        goReduce() {
+            this.fns.reduceRight((first, fn) => {
+                return () => fn(ctx, first);
+            }, () => this.callback(ctx))();
+        }
+    }
+
+    app.use((ctx, next) => {
+        ctx.name = 'Lucy'
+        next()
+    });
+
+    app.use((ctx, next) => {
+        ctx.age = "12";
+        next()
+    });
+
+    app.use((ctx, next) => {
+        console.log(`${ctx.name} is ${ctx.age} years old.`) // => Lucy is 12 years old.
+        next()
+    });
+
+    // ... 任意调用 use 插入中间件
+    app.go({}) // => 启动执行，最后会调用 callback 打印 => { name: 'Lucy', age: 12  }
+</script>
