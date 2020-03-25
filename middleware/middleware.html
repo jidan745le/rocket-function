@@ -24,7 +24,7 @@
         },
 
         //用reduce方法
-        goReduce() {
+        goReduce(ctx) {
             this.fns.reduceRight((first, fn) => {
                 return () => fn(ctx, first);
             }, () => this.callback(ctx))();
