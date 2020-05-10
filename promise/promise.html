@@ -1,0 +1,58 @@
+<script>
+    //implementation
+    let asap = (function () {
+        let text = 1;
+        let textNode = document.createTextNode(text.toString());
+        return function (fn) {
+            let observer = new MutationObserver(() => {
+                fn();
+                observer.disconnect();
+            });
+
+            observer.observe(textNode, { characterData: true })
+            text = -text;
+            textNode.textContent = text.toString();
+
+        }
+    })()
+
+    let compose = (fnArray) => {
+        if (fnArray.length == 0) {
+            return arg => arg;
+        } else if (fnArray.length == 1) {
+            return fnArray[0];
+        }
+        else {
+            return fnArray.reduce((a, b) => arg => { b(a(arg)) })
+        }
+
+    }
+
+    function rocketPromise(fnToExec) {
+        this.fnArray = [];
+        this.resolve = (value) => {
+            asap(() => { compose(this.fnArray)(value) });
+        }
+
+        fnToExec(this.resolve);
+    }
+
+
+    rocketPromise.prototype.then = function (fn) {
+        this.fnArray.push(fn);
+        return this;
+    }
+
+    //test
+    new rocketPromise(function (resolve) {
+        let a = 1;
+        a++;
+        resolve(a)
+        console.log(a);
+
+    }).then((a) => {
+        a++;
+        console.log(a);
+        return a;
+    })
+</script>
