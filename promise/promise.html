@@ -23,18 +23,31 @@
             return fnArray[0];
         }
         else {
-            return fnArray.reduce((a, b) => arg => { b(a(arg)) })
+            return fnArray.reduce((a, b) => arg => {
+                let result = a(arg);
+                if(result instanceof rocketPromise){
+                    return result.then(b);
+                }else{
+                    return b(result);
+                }
+               
+            })
         }
 
     }
 
     function rocketPromise(fnToExec) {
         this.fnArray = [];
+        this.catchFn = [];
         this.resolve = (value) => {
             asap(() => { compose(this.fnArray)(value) });
         }
 
-        fnToExec(this.resolve);
+        this.reject = (value) => {
+            asap(() => { this.catchFn[0](value) })
+        }
+
+        fnToExec(this.resolve, this.reject);
     }
 
 
@@ -43,15 +56,37 @@
         return this;
     }
 
+    rocketPromise.prototype.catch = function (fn) {
+        this.catchFn.push(fn);
+        return this;
+    }
+
     //test
-    new rocketPromise(function (resolve) {
+    new rocketPromise(function (resolve, reject) {
         let a = 1;
         a++;
-        resolve(a)
-        console.log(a);
+        resolve(a);
 
     }).then((a) => {
+        console.log(a);
+        return a;
+    }).then((a)=>{
+        return new rocketPromise(resolve=>{
+            a++;
+            setTimeout(()=>{
+                resolve(a);
+            }  ,2000);
+            
+        }) 
+    }).then((a)=>{
+        console.log(a);
         a++;
+        return a;
+    }).then((a)=>{
+        console.log(a);
+        a++;
+        return a;
+    }).then((a)=>{
         console.log(a);
         return a;
     })
