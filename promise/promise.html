@@ -40,7 +40,7 @@
         this.fnArray = [];
         this.catchFn = [];
         this.resolve = (value) => {
-            asap(() => { compose(this.fnArray)(value) });
+            asap(() => { compose(this.fnArray)(value);this.fnArray= []; });
         }
 
         this.reject = (value) => {
@@ -89,5 +89,12 @@
     }).then((a)=>{
         console.log(a);
         return a;
+    })
+
+
+    new rocketPromise(resolve=>{
+        document.addEventListener("click",resolve)
+    }).then(()=>{
+        alert(1);
     })
 </script>
