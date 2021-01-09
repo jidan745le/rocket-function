@@ -1,0 +1,30 @@
+function flat(arr,depth) {
+  const queue = arr.slice();
+  const ret = [];
+  let idx = 0;
+  let deep = 0;
+  while(queue.length > 0){    
+    const element = queue.shift();
+    if(Array.isArray(element)){
+       if(arr[idx] === element){
+         idx ++;
+         deep = 0;
+       }
+       
+       if(deep < depth){
+         deep++;
+         queue.unshift(...element);
+       }else{
+         ret.push(element);
+       }
+    }else{
+       if(deep === 0){
+        idx++;
+       }
+       ret.push(element);
+    }
+  }
+  return ret
+}
+
+flat([1, [2], [3, [4]]],2);
